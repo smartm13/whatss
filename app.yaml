@@ -1,0 +1,20 @@
+application: whatsspy
+version: 1a
+runtime: php55
+api_version: 1
+threadsafe: yes
+
+handlers:
+- url: /favicon\.ico
+  static_files: favicon.ico
+  upload: favicon\.ico
+
+- url: /index.html
+  script: index.html
+
+- url: /xmihir.*
+  script: main.php
+
+- url: /(.*)
+  script: \1
+

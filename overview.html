@@ -1,0 +1,714 @@
+<div class="row">
+	<div class="col-md-12">
+		<span data-ng-show="tokenInvalid == true">
+			<div class="alert alert-danger" role="alert"><strong>{{'TOKEN_INVALID' | translate}}</strong> {{'OVERVIEW_TOKEN_INVALID' | translate}}</div>
+		</span>
+		<span data-ng-show="tokenAuth != null">
+			<div class="alert alert-warning" role="alert"><strong>{{'OVERVIEW_TOKEN_INFO_STRONG' | translate}}</strong> {{'OVERVIEW_TOKEN_INFO' | translate}}</div>
+		</span>
+		<div class="row" data-ng-hide="tokenAuth != null">
+			<div class="col-md-3">
+				<div class="well whatsspy-header-box">
+					<strong><span class="glyphicon glyphicon-filter" aria-hidden="true"></span> {{'OVERVIEW_FILTERS' | translate}}</strong>
+					<br />
+					<br />
+					<p>
+						<input type="text" class="form-control" id="filterPhonenumber"data-ng-model="filterPhonenumber" ng-model-options="{debounce: 1000}" placeholder="{{'OVERVIEW_FILTER_PHONE' | translate}}">
+					</p>
+					<p>
+						<input type="text" class="form-control" id="filterName" data-ng-model="filterName"  ng-model-options="{debounce: 1000}" placeholder="{{'OVERVIEW_FILTER_NAME' | translate}}" data-ng-attr-title="{{'OVERVIEW_FILTER_NAME_TITLE' | translate}}" data-toggle="tooltip" data-placement="bottom">
+					</p>
+					<p>
+						<select class="form-control" data-ng-model="filterGroup" data-ng-options="group.gid as group.name for group in groups" ></select>
+					</p>
+				</div>
+			</div>	
+			<div class="col-md-9">
+				<div class="well whatsspy-header-box">
+					<p>
+						<span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> {{'OVERVIEW_INFO_STATUS' | translate}} <span data-ng-show="accounts.length > 0">{{'OVERVIEW_INFO_STATUS_FROM' | translate}} {{accounts.length}} {{'OVERVIEW_INFO_STATUS_CONTACTS' | translate}}</span> {{'OVERVIEW_INFO_STATUS_SINCE' | translate}} {{trackerStart | staticDatetime}}
+					</p>
+					<p>
+						<span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> {{'OVERVIEW_INFO_PRIV' | translate}} <a href="https://maikel.pro/blog/en-whatsapp-privacy-problem-explained-in-detail/" target="_blank">{{'OVERVIEW_INFO_PRIV_LINK' | translate}}</a>.
+					</p>
+					<p>
+						<span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> {{'OVERVIEW_INFO_LIVE' | translate}}
+					</p>
+					<p>
+						<span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> {{'OVERVIEW_INFO_TIMESPAN' | translate}}
+					</p>
+					<p data-ng-show="pendingAccounts.length > 0">
+						<span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> {{pendingAccounts.length}} {{'OVERVIEW_INFO_VERIFY' | translate}} <a data-ng-click="refreshContent()">{{'OVERVIEW_INFO_RELOAD' | translate}}</a> {{'OVERVIEW_INFO_RELOAD_2' | translate}}
+					</p>
+					<p class="whatsspy-header-options">
+						<span class="btn btn-default" data-toggle="modal" data-target="#addNumber"><span class="glyphicon glyphicon-plus"></span> {{'OVERVIEW_ADD' | translate}}</span> 
+						<a class="btn btn-default" href="https://maikel.pro/service/whatsspy/?importGoogleContacts&warning" target="_blank"><span class="glyphicon glyphicon-refresh"></span> {{'OVERVIEW_IMPORT' | translate}}</a> 
+						<span class="btn btn-default" data-toggle="modal" data-target="#manageGroups"><span class="glyphicon glyphicon-pencil"></span> {{'OVERVIEW_MANAGE_GROUPS' | translate}}</span> 
+						<span class="btn btn-default" data-toggle="modal" data-target="#managePerformance"><span class="glyphicon glyphicon-wrench"></span> {{'OVERVIEW_MANAGE_PERF' | translate}}</span> 
+					</p>
+				</div>
+			</div>
+		</div>
+		<div class="whatsspy-item-wrapper">	
+			<div class="panel panel-default" data-ng-repeat="number in accounts | numberFilter:filterPhonenumber:filterName:filterGroup" id="{{number.id}}">
+					<div class="panel-heading whatsspy-contact-head" data-ng-class="::{'whatsspy-account-highlight': number.id == hightLightAccount}">
+						<div class="col-md-1 col-xs-5">
+							<span data-ng-show="number.statusmessage_privacy == false && number.profilepic_privacy == true && number.profilepic != null" class="label label-info whatsspy-label-profile-pic" title="Showing last known profile picture because the privacy setting is now contacts only / nobody" data-toggle="tooltip" data-placement="bottom" data-container="body">!</span>
+							<span data-ng-show="number.statusmessage_privacy == true && number.profilepic_privacy == false && number.last_statusmessage != null" class="label label-info whatsspy-label-profile-pic" title="Showing last known status message because the privacy setting is now contacts only / nobody" data-toggle="tooltip" data-placement="bottom" data-container="body">!</span>
+							<span data-ng-show="number.statusmessage_privacy == true && number.profilepic_privacy == true && number.profilepic != null && number.last_statusmessage != null" class="label label-info whatsspy-label-profile-pic" title="Showing last known status message and last known profile picture because the privacy setting is now contacts only / nobody" data-toggle="tooltip" data-placement="bottom" data-container="body">!</span>
+							<img data-ng-cloak class="img-responsive img-rounded whatsspy-profile-pic" title="Indexed image at {{number.profilepic_updated | staticDatetime}}" data-ng-show="number.profilepic != null" data-ng-src="{{(number.profilepic != null) && getImageURL(number.profilepic) || ''}}" />
+							<img data-ng-cloak class="img-responsive img-rounded whatsspy-profile-pic" data-ng-show="number.profilepic == null" src="images/profile_pic_placeholder.png" />
+						</div>
+						<div class="col-md-11">
+							<div class="row">
+								<div class="col-md-6 hidden-xs">
+									<h3>{{number.name | emptyName}} <small class="contact_status">{{number.last_statusmessage}}</small></h3>
+								</div>
+								<!-- Responsive small setup -->
+								<div class="col-md-6 visible-xs">
+									<h3>{{number.name | emptyName}} <br /><small class="contact_status">{{number.last_statusmessage}}</small></h3>
+								</div>
+								<!-- END responsive small setup -->
+								<div class="col-md-3 hidden-xs whatsspy-contact-options">
+									<a class="btn btn-default" data-ng-click="toggleContactPanel(number);" data-ng-hide="tokenAuth != null">
+										<span data-ng-show="accountData[number.id].showPanel != true"><span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span> {{'OVERVIEW_EXPAND' | translate}}</span>
+										<span data-ng-show="accountData[number.id].showPanel == true"><span class="glyphicon glyphicon-zoom-out" aria-hidden="true"></span> {{'OVERVIEW_COLLAPSE' | translate}}</span>
+									</a>
+									<a class="btn btn-default" data-ng-hide="tokenAuth != null" data-ng-click="editNameModal(number);"><span class="glyphicon glyphicon-pencil" ></span> {{'OVERVIEW_EDIT' | translate}}</a>
+								</div>
+								<div class="col-md-3 hidden-xs whatsspy-contact-phone">
+									<div class="input-group">
+			            				<span class="input-group-addon">+</span>  
+						    			<input type="text" class="form-control" data-ng-value="::number.id">
+						    		</div>
+								</div>
+								<!-- Responsive small setup -->
+								<div class="col-xs-12 visible-xs whatsspy-contact-phone-xs">
+									<a class="btn btn-default" data-ng-click="toggleContactPanel(number);">
+										<span data-ng-show="accountData[number.id].showPanel != true"><span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span> {{'OVERVIEW_EXPAND' | translate}}</span>
+										<span data-ng-show="accountData[number.id].showPanel == true"><span class="glyphicon glyphicon-zoom-out" aria-hidden="true"></span> {{'OVERVIEW_COLLAPSE' | translate}}</span>
+									</a>
+									<a class="btn btn-default" data-ng-click="editNameModal(number);"><span class="glyphicon glyphicon-pencil" ></span> {{'OVERVIEW_EDIT' | translate}}</a>
+									<div class="input-group">
+			            				<span class="input-group-addon">+</span>  
+						    			<input type="text" class="form-control" data-ng-value="::number.id">
+						    		</div>
+								</div>
+								<!-- END responsive small setup -->
+							</div>
+							<div class="row">
+								<div class="col-md-9 hidden-xs">
+									<span data-ng-show="number.since != null" class="label label-info">{{'OVERVIEW_CONTACT_SINCE' | translate}} {{::number.since | staticDatetime}}</span>
+									<span data-ng-show="number.latest_online != null" class="label label-info whatsspy-label-last-seen" title="{{number.latest_online | staticDatetime}}">{{'OVERVIEW_CONTACT_LASTSEEN' | translate}} <span am-time-ago="number.latest_online"></span></span>
+									<span data-ng-repeat="group in number.groups">
+										<span class="label label-default">{{getGroupName(group.gid)}}</span>
+									</span>
+								</div>
+								<!-- Responsive small setup -->
+								<div class="col-md-9 visible-xs">
+									<span data-ng-show="number.since != null" class="label label-info whatsspy-label-notifications">{{'OVERVIEW_CONTACT_SINCE' | translate}} {{::number.since | staticDatetime}}</span>
+									<span data-ng-show="number.latest_online != null" class="label label-info whatsspy-label-notifications" title="{{number.latest_online | staticDatetime}}">{{'OVERVIEW_CONTACT_LASTSEEN' | translate}} <span am-time-ago="number.latest_online"></span></span>
+									<span data-ng-repeat="group in number.groups">
+										<span class="label label-default whatsspy-label-notifications">{{getGroupName(group.gid)}}</span> 
+									</span>
+								</div>
+								<!-- END responsive small setup -->
+								<div class="col-md-3 whatsspy-contact-phone">
+					    			<span data-ng-show="number.notify_status == true || number.notify_statusmsg == true || number.notify_profilepic == true || number.notify_privacy == true" class="label label-danger whatsspy-label-notifications" title="notifications enabled">
+					    				{{'OVERVIEW_CONTACT_NOTIF' | translate}}
+					    			</span>
+									<span data-ng-show="number.read_only_token" class="label label-warning whatsspy-label-notifications whatsspy-label-share" title="sharing enabled" data-ng-click="copyToClipboard(getTokenUrl('user', number.read_only_token))">
+					    				{{'OVERVIEW_CONTACT_SHARING' | translate}}
+					    			</span>
+								</div>
+							</div>
+						</div>
+						<div class="clear"></div>
+					</div>
+					<div class="panel-body" data-ng-show="accountData[number.id].showPanel == true">
+						<span data-ng-show="accountData[number.id].status.length < 1">
+							<center>{{'OVERVIEW_NO_INFO' | translate}}</center>
+						</span>
+						<span data-ng-show="accountData[number.id].status.length > 0">
+							<!-- Timeline information -->
+							<div data-ng-show="accountData[number.id] == null" class="whatsspy-lazy-load-warning"> {{'OVERVIEW_CLICK_LOAD' | translate}}</div>
+							<div data-ng-show="accountData[number.id].timelineLoaded" class="whatsspy-number-timeline">
+								<vis-timeline data="accountData[number.id].timelineData" options="timelineOptions" events="graphEvents"></vis-timeline>
+							</div>
+							<div class="whatsspy-passive-timeline" data-ng-show="accountData[number.id].timelineLoaded != true && accountData[number.id].status != null">
+								<button class="btn btn-default"  data-ng-click="loadTimelineManually(number)">{{'OVERVIEW_CLICK_LOAD_TIMELINE' | translate}}</button>
+							</div>
+							<!-- Additional information -->
+							<div class="row">
+								<div class="col-md-8">
+									<h4>{{'OVERVIEW_CONTACT_H_ANALYTICS' | translate}}</h4>
+									<div role="tabpanel">
+									  <!-- Nav tabs -->
+									  <ul class="nav nav-tabs" role="tablist">
+									    <li role="presentation" class="active" ><a aria-controls="overview" role="tab" data-toggle="tab" data-target="#overview-{{number.id}}">{{'OVERVIEW_CONTACT_ANALYTICS_OVERVIEW' | translate}}</a></li>
+									    <li role="presentation"><a aria-controls="opened-overview" role="tab" data-toggle="tab" data-target="#opened-overview-{{number.id}}">{{'OVERVIEW_CONTACT_ANALYTICS_OPENOVERVIEW' | translate}}</a></li>
+									    <li role="presentation"><a aria-controls="time-overview" role="tab" data-toggle="tab" data-target="#time-overview-{{number.id}}">{{'OVERVIEW_CONTACT_ANALYTICS_TIME_OVERVIEW' | translate}}</a></li>
+									    <li role="presentation"><a aria-controls="statusmessages" role="tab" data-toggle="tab" data-target="#statusmessages-{{number.id}}">{{'OVERVIEW_CONTACT_ANALYTICS_STATUS' | translate}} <span data-ng-show="accountData[number.id].statusmessages.length > 0" class="badge">{{accountData[number.id].statusmessages.length}}</span></a></li>
+									    <li role="presentation"><a aria-controls="pictures" role="tab" data-toggle="tab" data-target="#pictures-{{number.id}}">{{'OVERVIEW_CONTACT_ANALYTICS_PICS' | translate}} <span data-ng-show="accountData[number.id].pictures.length > 0" class="badge">{{accountData[number.id].pictures.length}}</span></a></li>
+									  </ul>
+
+									  <!-- Tab panes -->
+									  <div class="tab-content">
+									    <div role="tabpanel" class="tab-pane active whatsspy-tab-info-overview" id="overview-{{number.id}}">
+									    	<div data-ng-show="accountData[number.id].user != null">
+										    	<div class="row">
+										    		<div class="col-md-6">
+										    			<h5>{{'OVERVIEW_CONTACT_OPENED_H' | translate}}</h5>
+														<table class="table table-striped table-bordered ">
+													      <tbody>
+													        <tr>
+													          <th class="whatsspy-analytics-th-big">{{'OVERVIEW_CONTACT_TABLE_1D' | translate}} </th>
+													          <td>{{accountData[number.id].user.count_1day}} {{'OVERVIEW_CONTACT_TIMES' | translate}}</td>
+													        </tr>
+													        <tr>
+													          <th>{{'OVERVIEW_CONTACT_TABLE_7D' | translate}} </th>
+													          <td>{{accountData[number.id].user.count_7day}} {{'OVERVIEW_CONTACT_TIMES' | translate}}</td>
+													        </tr>
+													        <tr>
+													          <th>{{'OVERVIEW_CONTACT_TABLE_14D' | translate}} </th>
+													          <td>{{accountData[number.id].user.count_14day}} {{'OVERVIEW_CONTACT_TIMES' | translate}}</td>
+													        </tr>
+													        <tr>
+													          <th>{{'OVERVIEW_CONTACT_TABLE_31D' | translate}} </th>
+													          <td>{{accountData[number.id].user.count_31day}} {{'OVERVIEW_CONTACT_TIMES' | translate}}</td>
+													        </tr>
+													        <tr>
+													          <th>{{'OVERVIEW_CONTACT_TABLE_xD' | translate}} </th>
+													          <td>{{accountData[number.id].user.count_all}} {{'OVERVIEW_CONTACT_TIMES' | translate}}</td>
+													        </tr>
+													      </tbody>
+													    </table>
+													    <small><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span> {{'OVERVIEW_CONTACT_TRACKING_SINCE' | translate}} {{number.since | staticDatetime}}.</small>
+										    		</div>
+										    		<div class="col-md-6">
+										    			<h5>{{'OVERVIEW_CONTACT_TIME_SPENT_WA' | translate}}</h5>
+														<table class="table table-striped table-bordered ">
+													      <tbody>
+													        <tr>
+													          <th class="whatsspy-analytics-th">{{'OVERVIEW_CONTACT_TABLE_1D' | translate}} </th>
+													          <td>{{accountData[number.id].user.online_1day | timeFormat}}</td>
+													        </tr>
+													        <tr>
+													          <th>{{'OVERVIEW_CONTACT_TABLE_7D' | translate}}</th>
+													          <td>{{accountData[number.id].user.online_7day | timeFormat}}</td>
+													        </tr>
+													        <tr>
+													          <th>{{'OVERVIEW_CONTACT_TABLE_14D' | translate}}</th>
+													          <td>{{accountData[number.id].user.online_14day | timeFormat}}</td>
+													        </tr>
+													        <tr>
+													          <th>{{'OVERVIEW_CONTACT_TABLE_31D' | translate}} </th>
+													          <td>{{accountData[number.id].user.online_31day | timeFormat}}</td>
+													        </tr>
+													        <tr>
+													          <th>{{'OVERVIEW_CONTACT_TABLE_xD' | translate}} </th>
+													          <td>{{accountData[number.id].user.online_all | timeFormat}}</td>
+													        </tr>
+													      </tbody>
+													    </table>
+										    		</div>
+										    	</div>
+										    </div>
+										    <div class="whatsspy-no-information-data" data-ng-show="accountData[number.id].user == null">
+										    	{{'OVERVIEW_CONTACT_LOADING_INFO' | translate}}
+										    </div>
+									    </div>
+									    <div role="tabpanel" class="tab-pane whatsspy-tab-info-overview" id="opened-overview-{{number.id}}">
+									    	<div data-ng-show="accountData[number.id].user != null">
+										    	<div class="row">
+										    		<div class="col-md-12">
+										    			<div class="whatsspy-bar-graph-toggle">
+										    				<button data-ng-show="accountData[number.id].generated.showHour != true" data-ng-click="accountData[number.id].generated.showWeekday = false; accountData[number.id].generated.showHour = true; " type="button" class="btn btn-info">{{'OVERVIEW_CONTACT_SWITCH_HOUR_VIEW' | translate}}</button>
+										    				<button data-ng-show="accountData[number.id].generated.showWeekday != true" data-ng-click="accountData[number.id].generated.showWeekday = true; accountData[number.id].generated.showHour = false" type="button" class="btn btn-info">{{'OVERVIEW_CONTACT_SWITCH_WEEKDAY_VIEW' | translate}}</button>
+										    			</div>
+										    			<span data-ng-show="accountData[number.id].generated.showWeekday == true">
+											    			<h5>{{'OVERVIEW_CONTACT_H_OPENING_WA_WEEKDAY' | translate}}</h5>
+											    			<nvd3-multi-bar-chart
+														    	data="accountData[number.id].generated.chart_weekday_status_count_all"
+														        id="opened-overview-graph-weekday-{{number.id}}"
+														        tooltipcontent="barChartToolTip('weekday', 'times')"
+														        width="700"
+	        													height="260"
+														        showXAxis="false"
+														        showYAxis="true"
+														        margin=" {top:5,bottom:5,right:0}"
+														        showLegend="true"
+														        tooltips="true"
+														        stacked="true">
+														        	<svg></svg>
+														    </nvd3-multi-bar-chart>
+														</span>
+														<span data-ng-show="accountData[number.id].generated.showHour == true">
+											    			<h5>{{'OVERVIEW_CONTACT_H_OPENING_WA_HOUR' | translate}}</h5>
+											    			<nvd3-multi-bar-chart
+														    	data="accountData[number.id].generated.chart_hour_status_count_all"
+														        id="opened-overview-graph-hour-{{number.id}}"
+														        tooltipcontent="barChartToolTip('hour', 'times')"
+														        width="700"
+	        													height="260"
+														        showXAxis="false"
+														        showYAxis="true"
+														        margin=" {top:5,bottom:5,right:0}"
+														        showLegend="true"
+														        tooltips="true"
+														        stacked="true">
+														        	<svg></svg>
+														    </nvd3-multi-bar-chart>
+														</span>
+										    		</div>
+										    	</div>
+										    </div>
+										    <div class="whatsspy-no-information-data" data-ng-show="accountData[number.id].user == null">
+										    	{{'OVERVIEW_CONTACT_LOADING_INFO' | translate}}
+										    </div>
+									    </div>
+									    <div role="tabpanel" class="tab-pane whatsspy-tab-info-overview" id="time-overview-{{number.id}}">
+									    	<div data-ng-show="accountData[number.id].user != null">
+										    	<div class="row">
+										    		<div class="col-md-12">
+										    			<div class="whatsspy-bar-graph-toggle">
+										    				<button data-ng-show="accountData[number.id].generated.showHour != true" data-ng-click="accountData[number.id].generated.showWeekday = false; accountData[number.id].generated.showHour = true; " type="button" class="btn btn-info">{{'OVERVIEW_CONTACT_SWITCH_HOUR_VIEW' | translate}}</button>
+										    				<button data-ng-show="accountData[number.id].generated.showWeekday != true" data-ng-click="accountData[number.id].generated.showWeekday = true; accountData[number.id].generated.showHour = false" type="button" class="btn btn-info">{{'OVERVIEW_CONTACT_SWITCH_WEEKDAY_VIEW' | translate}}</button>
+										    			</div>
+										    			<span data-ng-show="accountData[number.id].generated.showWeekday == true">
+											    			<h5>{{'OVERVIEW_CONTACT_H_TIME_WA_WEEKDAY' | translate}}</h5>
+											    			<nvd3-multi-bar-chart
+														    	data="accountData[number.id].generated.chart_weekday_status_time_all"
+														        id="time-overview-graph-weekday-{{number.id}}"
+														        tooltipcontent="barChartToolTip('weekday', 'minutes')"
+														        width="700"
+	        													height="260"
+														        showXAxis="false"
+														        showYAxis="true"
+														        margin=" {top:5,bottom:5,right:0}"
+														        showLegend="true"
+														        tooltips="true"
+														        stacked="true">
+														        	<svg></svg>
+														    </nvd3-multi-bar-chart>
+														</span>
+														<span data-ng-show="accountData[number.id].generated.showHour == true">
+											    			<h5>{{'OVERVIEW_CONTACT_H_TIME_WA_HOUR' | translate}}</h5>
+											    			<nvd3-multi-bar-chart
+														    	data="accountData[number.id].generated.chart_hour_status_time_all"
+														        id="time-overview-graph-hour-{{number.id}}"
+														        tooltipcontent="barChartToolTip('hour', 'minutes')"
+														        width="700"
+	        													height="260"
+														        showXAxis="false"
+														        showYAxis="true"
+														        margin=" {top:5,bottom:5,right:0}"
+														        showLegend="true"
+														        tooltips="true"
+														        stacked="true">
+														        	<svg></svg>
+														    </nvd3-multi-bar-chart>
+														</span>
+										    		</div>
+										    	</div>
+										    </div>
+										    <div class="whatsspy-no-information-data" data-ng-show="accountData[number.id].user == null">
+										    	{{'OVERVIEW_CONTACT_LOADING_INFO' | translate}}
+										    </div>
+									    </div>
+									    <div role="tabpanel" class="tab-pane whatsspy-tab-status-msg" id="statusmessages-{{number.id}}">
+											<div class="whatsspy-status-entry" data-ng-repeat="entry in accountData[number.id].statusmessages">
+												<span class="label label-info">{{entry.changed_at | staticDatetime}}</span> 
+												{{entry.status}}
+											</div>
+											<div class="whatsspy-no-information-data" data-ng-show="accountData[number.id].statusmessages == null || accountData[number.id].statusmessages.length == 0">
+									    		{{'OVERVIEW_NO_INFO' | translate}}
+									    	</div>
+									    </div>
+									    <div role="tabpanel" class="tab-pane whatsspy-tab-info-pic" id="pictures-{{number.id}}">
+									    	<div data-ng-repeat="picture in accountData[number.id].pictures" class="whatsspy-img-container">
+									    		<img class="img-rounded whatsspy-img-big" data-ng-src="{{(picture.hash != null) && getImageURL(picture.hash) || ''}}" />
+									    		<br />
+									    		<span class="label label-info">{{picture.changed_at | staticDate}}</span>
+									    	</div>
+									    	<div class="whatsspy-no-information-data" data-ng-show="accountData[number.id].status == null || accountData[number.id].pictures.length == 0">
+									    		{{'OVERVIEW_NO_INFO' | translate}}
+									    	</div>
+									    </div>
+									  </div>
+									</div>
+								</div>
+								<div class="col-md-4">
+									<h4>{{'OVERVIEW_CONTACT_H_PRIV_STATUS' | translate}}</h4>
+									<div role="tabpanel">
+									  <!-- Nav tabs -->
+									  <ul class="nav nav-tabs" role="tablist">
+									    <li role="presentation" class="active"><a aria-controls="privacy" role="tab" data-toggle="tab" data-target="#privacy-{{number.id}}">{{'OVERVIEW_CONTACT_PRIV_STATUS' | translate}}</a></li>
+									    <li role="presentation"><a aria-controls="stats" role="tab" data-toggle="tab" data-target="#logs-{{number.id}}">{{'OVERVIEW_CONTACT_ONLINE_EVENTS' | translate}}</a></li>
+									  </ul>
+
+									  <!-- Tab panes -->
+									  <div class="tab-content">
+									    <div role="tabpanel" class="tab-pane active" id="privacy-{{number.id}}">
+									    	<table class="table table-striped table-bordered ">
+										      <tbody>
+										        <tr>
+										          <th class="whatsspy-analytics-th-privacy">{{'OVERVIEW_CONTACT_H_LASTSEEN' | translate}}</th>
+										          <td>
+										          	<span data-ng-show="number.lastseen_privacy == true" title="This privacy setting may be contacts or nobody. This can't be detected." class="label label-danger label-full-width">{{'OVERVIEW_PRIVACY_SETTINGS_FRIENDS' | translate}}</span>
+													<span data-ng-show="number.lastseen_privacy == false" class="label label-success label-full-width">{{'OVERVIEW_PRIVACY_SETTINGS_PUBLIC' | translate}}</span>
+													
+													<small><span data-ng-show="accountData[number.id].user.lastseen_changed_privacy != null">{{'OVERVIEW_PRIVACY_LAST_CHANGE' | translate}} <strong>{{accountData[number.id].user.lastseen_changed_privacy | privacy}}</strong><br /> {{'OVERVIEW_PRIVACY_LAST_CHANGE_AT' | translate}} {{accountData[number.id].user.lastseen_changed_privacy_updated | staticDatetime}}</span></small>
+												</td>
+										        </tr>
+										        <tr>
+										          <th class="whatsspy-analytics-th-privacy">{{'OVERVIEW_PRIVACY_H_PROF_PIC' | translate}}</th>
+										          <td>
+										          	<span data-ng-show="number.profilepic_privacy == true" title="This privacy setting may be contacts or nobody. This can't be detected." class="label label-danger label-full-width">{{'OVERVIEW_PRIVACY_SETTINGS_FRIENDS' | translate}}</span>
+													<span data-ng-show="number.profilepic_privacy == false" class="label label-success label-full-width">{{'OVERVIEW_PRIVACY_SETTINGS_PUBLIC' | translate}}</span>
+
+													<small><span data-ng-show="accountData[number.id].user.profilepic_changed_privacy != null">{{'OVERVIEW_PRIVACY_LAST_CHANGE' | translate}} <strong>{{accountData[number.id].user.profilepic_changed_privacy | privacy}}</strong><br /> {{'OVERVIEW_PRIVACY_LAST_CHANGE_AT' | translate}} {{accountData[number.id].user.profilepic_changed_privacy_updated | staticDatetime}}*</span></small>
+												</td>
+										        </tr>
+										        <tr>
+										          <th class="whatsspy-analytics-th-privacy">{{'OVERVIEW_PRIVACY_H_STATUS' | translate}}</th>
+										          <td>
+										          	<span data-ng-show="number.statusmessage_privacy == true" title="This privacy setting may be contacts or nobody. This can't be detected." class="label label-danger label-full-width">{{'OVERVIEW_PRIVACY_SETTINGS_FRIENDS' | translate}}</span>
+													<span data-ng-show="number.statusmessage_privacy == false" class="label label-success label-full-width">{{'OVERVIEW_PRIVACY_SETTINGS_PUBLIC' | translate}}</span>
+
+													<small><span data-ng-show="accountData[number.id].user.statusmessage_changed_privacy != null">{{'OVERVIEW_PRIVACY_LAST_CHANGE' | translate}} <strong>{{accountData[number.id].user.statusmessage_changed_privacy | privacy}}</strong><br /> {{'OVERVIEW_PRIVACY_LAST_CHANGE_AT' | translate}} {{accountData[number.id].user.statusmessage_changed_privacy_updated | staticDatetime}}*</span></small>
+												</td>
+										        </tr>
+										      </tbody>
+										    </table>
+										    <small>
+										    	<span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span> {{'OVERVIEW_PRIVACY_TRACK_NOTICE' | translate}}
+										    	<br />
+										    	<span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span> {{'OVERVIEW_PRIVACY_ASSUMPTION' | translate}}
+										    </small>
+									    </div>
+									    <div role="tabpanel" class="tab-pane whatsspy-tab-info-logs" id="logs-{{number.id}}">
+											<div class="whatsspy-status-entry" data-ng-repeat="entry in accountData[number.id].status">
+												<span class="label label-info" title="Logid: {{entry.sid}}">{{entry.start | staticDate}}</span> 
+												{{'OVERVIEW_LOG_FROM' | translate}} <strong>{{entry.start | staticTime}}</strong> {{'OVERVIEW_LOG_TILL' | translate}} <strong data-ng-show="entry.end != null">{{entry.end | staticTime}}</strong><strong data-ng-show="entry.end == null">{{'OVERVIEW_LOG_NOW' | translate}}</strong>
+											</div>
+											<div class="whatsspy-no-information-data" data-ng-show="accountData[number.id].status == null || accountData[number.id].status.length == 0">
+									    		{{'OVERVIEW_NO_INFO' | translate}}
+									    	</div>
+									    </div>
+									  </div>
+									</div>
+								</div>
+							</div>
+						</span>
+					</div>
+			</div>
+			<span data-ng-show="accounts.length == 0">
+				<center>{{'OVERVIEW_NO_ACC' | translate}}</center>
+			</span>
+		</div>
+	</div>
+</div>	
+<!-- Models -->
+<div class="modal fade" id="addNumber" tabindex="-1" role="dialog" aria-labelledby="addNumberLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="addNumberLabel">{{'OVERVIEW_ADD_CONTACT_H' | translate}}</h4>
+      </div>
+      <div class="modal-body">
+      	<form class="form-horizontal">
+		  <div class="form-group">
+		    <label for="countryCode" class="col-sm-2 control-label">{{'OVERVIEW_ADD_CONTACT_PHONE' | translate}}</label>
+		    <div class="col-sm-8">
+		    	<div class="row">
+		    		<div class="col-md-3">
+		    			<div class="input-group ">
+            				<span class="input-group-addon">+</span>  
+			    			<input type="text" class="form-control" id="countryCode" data-ng-model="newContact.countryCode" placeholder="{{'OVERVIEW_ADD_CONTACT_PLACEHOLDER_COUNTRYCODE' | translate}}" value="0031">
+			    		</div>
+		    		</div>
+		    		<div class="col-md-9">
+		    			<input type="text"  class="form-control" id="phoneNumber" data-ng-model="newContact.number"placeholder="{{'OVERVIEW_ADD_CONTACT_PLACEHOLDER_PHONE' | translate}}" >
+		    		</div>
+		    	</div>
+		    </div>
+		  </div>
+		  <div class="form-group">
+		    <label for="name" class="col-sm-2 control-label">{{'OVERVIEW_ADD_CONTACT_NAME' | translate}}</label>
+		    <div class="col-sm-8">
+		      <input type="text" class="form-control" id="name" data-ng-model="newContact.name" placeholder="{{'OVERVIEW_EDIT_CONTACT_NAME_PLACEHOLDER' | translate}}">
+		    </div>
+		  </div>
+		  <div class="form-group">
+		    <label for="name" class="col-sm-2 control-label">{{'OVERVIEW_ADD_CONTACT_GROUP' | translate}}</label>
+		    <div class="col-sm-8">
+    			<div class="input-group"> 
+    				<div class="input-group-addon"><span class="glyphicon glyphicon-tag" aria-hidden="true"></span></div>
+			      	<multiselect class="whatsspy-group-select" data-ng-model="newContact.groups" data-options="group.gid as group.name for group in getRealGroups()" data-multiple="true" data-compare-by="gid" scroll-after-rows="10"></multiselect>
+			    </div>
+		    </div>
+		  </div>
+		</form>
+		<small>{{'OVERVIEW_ADD_CONTACT_NOTICE' | translate}}</small>
+      </div>
+      <div class="modal-footer">
+		<div class="whatsspy-contact-options">
+      		<button type="submit" data-ng-click="submitNewAccount();" class="btn btn-success"><span class="glyphicon glyphicon-ok-circle" aria-hidden="true"></span> {{'OVERVIEW_ADD_CONTACT_ADD' | translate}}</button>
+      	</div>
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{'OVERVIEW_ADD_CONTACT_CLOSE' | translate}}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="editName" tabindex="-1" role="dialog" aria-labelledby="editNameLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="editNameLabel">{{'OVERVIEW_EDIT_CONTACT_H' | translate}}</h4>
+      </div>
+      <div class="modal-body">
+      	<form class="form-horizontal">
+		  <div class="form-group">
+		    <label for="phoneNumber" class="col-sm-2 control-label">{{'OVERVIEW_EDIT_CONTACT_PHONE' | translate}}</label>
+		    <div class="col-sm-7 col-sm-offset-1 col-xs-10 col-xs-offset-1">
+		    	<div class="row">
+	    			<div class="input-group ">
+        				<span class="input-group-addon">+</span>  
+		    			<input type="text" class="form-control" id="phoneNumber" data-ng-value="editContact.id" disabled="disabled">
+		    		</div>
+		    	</div>
+		    </div>
+		  </div>
+		  <div class="form-group">
+		    <label for="name" class="col-sm-2 control-label">{{'OVERVIEW_EDIT_CONTACT_NAME' | translate}}</label>
+		    <div class="col-sm-7 col-sm-offset-1 col-xs-10 col-xs-offset-1">
+		    	<div class="row">
+	    			<div class="input-group"> 
+	    				<div class="input-group-addon"><span class="glyphicon glyphicon-user" aria-hidden="true"></span></div>
+				      	<input type="text" class="form-control" id="name" data-ng-model="editContact.name" placeholder="{{'OVERVIEW_EDIT_CONTACT_NAME_PLACEHOLDER' | translate}}">
+				    </div>
+		    	</div>
+		    </div>
+		  </div>
+		  <div class="form-group">
+		    <label for="name" class="col-sm-2 control-label">{{'OVERVIEW_EDIT_CONTACT_GROUPS' | translate}}</label>
+		    <div class="col-sm-7 col-sm-offset-1 col-xs-10 col-xs-offset-1">
+		    	<div class="row">
+	    			<div class="input-group"> 
+	    				<div class="input-group-addon"><span class="glyphicon glyphicon-tag" aria-hidden="true"></span></div>
+				      	<multiselect class="whatsspy-group-select" data-ng-model="editContact.groups" data-options="group.gid as group.name for group in getRealGroups()" data-multiple="true" data-compare-by="gid" scroll-after-rows="10"></multiselect>
+				    </div>
+		    	</div>
+		    </div>
+		  </div>
+		  <div class="form-group">
+		    <label for="phoneNumber" class="col-sm-2 control-label">{{'OVERVIEW_EDIT_CONTACT_PROFILESHARE' | translate}}</label>
+		    <div class="col-sm-7 col-sm-offset-1 col-xs-10 col-xs-offset-1">
+		    	<div class="row">
+		    		<div class="row">
+		    			<div class="col-sm-8  col-xs-12">
+		    				<div class="input-group whatsspy-copy-token" data-ng-click="copyToClipboard(getTokenUrl('user', editContact.read_only_token))">
+		        				<span class="input-group-addon"><span class="glyphicon glyphicon-link" aria-hidden="true"></span></span>  
+				    			<input type="text" class="form-control" id="shareUrl" data-ng-value="editContact.read_only_token | emptyToken" disabled="disabled">
+				    		</div>
+		    			</div>
+		    			<div class="col-sm-4 col-xs-12">
+		    				<button type="button" class="btn btn-primary" data-ng-click="generateReadOnlyToken('user', editContact, null)">
+		    					 {{'OVERVIEW_EDIT_CONTACT_GENERATE_TOKEN' | translate}}
+		    				</button>
+		    				<button type="button" class="btn btn-danger" data-ng-click="resetReadOnlyToken('user', editContact, null)">
+		    					 {{'OVERVIEW_EDIT_CONTACT_RESET_TOKEN' | translate}}
+		    				</button>
+		    			</div>
+		    		</div>    			
+		    		<small> {{'OVERVIEW_EDIT_CONTACT_TOKEN_INFO' | translate}}<br />
+		    			{{'OVERVIEW_EDIT_CONTACT_TOKEN_INFO2' | translate}}</small>
+		    	</div>
+		    </div>
+		  </div>
+		  <div class="form-group">
+		    <label for="name" class="col-sm-2 control-label">{{'OVERVIEW_EDIT_CONTACT_NOTIFICATIONS' | translate}}</label>
+		    <div class="col-sm-7 col-sm-offset-1 col-xs-10 col-xs-offset-1" data-ng-disabled="isNotificationEnabled();">
+		    	<div class="row">
+	    			<div class="input-group"> 
+	    				<button type="button" class="btn btn-primary whatsspy-btn-notify col-xs-12" data-ng-click="editContact.notify_status = getOpposite(editContact.notify_status);" data-ng-disabled="notificationOptionDisabled">
+	    					<span class="glyphicon glyphicon-ok green" aria-hidden="true" data-ng-show="editContact.notify_status == true"></span>
+	    					<span class="glyphicon glyphicon-remove red" aria-hidden="true" data-ng-show="editContact.notify_status == false"></span>
+	    					 {{'OVERVIEW_EDIT_CONTACT_NOTIFICATIONS_ONLINE' | translate}}
+	    				</button>
+	    				<button type="button" class="btn btn-primary whatsspy-btn-notify col-xs-12" data-ng-click="editContact.notify_statusmsg = getOpposite(editContact.notify_statusmsg);" data-ng-disabled="notificationOptionDisabled">
+	    					<span class="glyphicon glyphicon-ok green" aria-hidden="true" data-ng-show="editContact.notify_statusmsg == true"></span>
+	    					<span class="glyphicon glyphicon-remove red" aria-hidden="true" data-ng-show="editContact.notify_statusmsg == false"></span>
+	    					{{'OVERVIEW_EDIT_CONTACT_NOTIFICATIONS_STATUSMSG' | translate}}
+	    				</button>
+	    				<button type="button" class="btn btn-primary whatsspy-btn-notify col-xs-12" data-ng-click="editContact.notify_profilepic = getOpposite(editContact.notify_profilepic);" data-ng-disabled="notificationOptionDisabled">
+	    					<span class="glyphicon glyphicon-ok green" aria-hidden="true" data-ng-show="editContact.notify_profilepic == true"></span>
+	    					<span class="glyphicon glyphicon-remove red" aria-hidden="true" data-ng-show="editContact.notify_profilepic == false"></span>
+	    					{{'OVERVIEW_EDIT_CONTACT_NOTIFICATIONS_PROFPIC' | translate}}
+	    				</button>
+	    				<button type="button" class="btn btn-primary whatsspy-btn-notify col-xs-12" data-ng-click="editContact.notify_privacy = getOpposite(editContact.notify_privacy);" data-ng-disabled="notificationOptionDisabled">
+	    					<span class="glyphicon glyphicon-ok green" aria-hidden="true" data-ng-show="editContact.notify_privacy == true"></span>
+	    					<span class="glyphicon glyphicon-remove red" aria-hidden="true" data-ng-show="editContact.notify_privacy == false"></span>
+	    					{{'OVERVIEW_EDIT_CONTACT_NOTIFICATIONS_PRIV' | translate}}
+	    				</button>
+					    <small data-ng-show="notificationOptionDisabled">{{'OVERVIEW_EDIT_CONTACT_NOTIFICATIONS_AGENTS' | translate}} <strong>{{'OVERVIEW_EDIT_CONTACT_NOTIFICATIONS_AGENTS_CONFIG' | translate}}</strong>. {{'OVERVIEW_EDIT_CONTACT_NOTIFICATIONS_MISSING' | translate}}</small>
+					    <small data-ng-show="notificationOptionDisabled == false">
+					    	{{'OVERVIEW_EDIT_CONTACT_NOTIFICATIONS_SENDING' | translate}}
+					    	<span data-ng-repeat="(key, agent) in notificationSettings" data-ng-show="agent.enabled == true && agent['notify-user'] == true">
+					    		<strong>{{agent.name}}</strong> <span data-ng-hide="$last">{{'OVERVIEW_AND' | translate}}</span> 
+					    	</span>
+					    </small>
+					    <br />
+					    <br />
+	    				<button type="button" class="btn btn-primary whatsspy-btn-notify col-xs-12" data-ng-click="editContact.notify_timeline = getOpposite(editContact.notify_timeline);">
+	    					<span class="glyphicon glyphicon-ok green" aria-hidden="true" data-ng-show="editContact.notify_timeline == true"></span>
+	    					<span class="glyphicon glyphicon-remove red" aria-hidden="true" data-ng-show="editContact.notify_timeline == false"></span>
+	    					 {{'OVERVIEW_EDIT_CONTACT_SHOW_TIMELINE' | translate}}
+	    				</button>
+	    				<br />
+						<div class="input-group col-xs-12">
+							<div class="input-group-addon"><span class="glyphicon glyphicon-music" aria-hidden="true"></span></div>
+							<select class="form-control" ng-model="editContact.notification_sound" ng-options="sound for sound in notificationSounds"></select>
+							<div class="input-group-addon">
+								<span class="glyphicon glyphicon-play whatsspy-copy-token" aria-hidden="true"  data-ng-click="playNotificationSound(editContact.notification_sound)"></span>
+							</div>
+						</div>
+						<small>{{'OVERVIEW_EDIT_CONTACT_SHOW_TIMELINE_EXPL' | translate}}</small>
+				    </div>
+		    	</div>
+		    </div>
+		  </div>
+		</form>
+
+      </div>
+      <div class="modal-footer">
+      	<div class="whatsspy-contact-options">
+	      	<button type="submit" data-ng-click="submitAccountEdit();" class="btn btn-success"><span class="glyphicon glyphicon-ok-circle" aria-hidden="true"></span> {{'OVERVIEW_EDIT_CONTACT_SAVE' | translate}}</button> 
+			<a class="btn btn-warning" data-ng-attr-title="{{'OVERVIEW_EDIT_CONTACT_INACTIVE_TITLE' | translate}}" data-toggle="tooltip" data-placement="bottom" data-ng-click="setNumberInactive(editContact.id);"><span class="glyphicon glyphicon-off" title="Set inactive"></span> {{'OVERVIEW_EDIT_CONTACT_INACTIVE' | translate}}</a> 
+			<a class="btn btn-danger" data-ng-attr-title="{{'OVERVIEW_EDIT_CONTACT_DETELE_TITLE' | translate}}" data-toggle="tooltip" data-placement="bottom" data-ng-click="deleteAccountConfirm(editContact.id);"><span class="glyphicon glyphicon-ban-circle" aria-hidden="true"></span> {{'OVERVIEW_EDIT_CONTACT_DELETE' | translate}}</a>
+		</div>
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{'OVERVIEW_ADD_CONTACT_CLOSE' | translate}}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="manageGroups" tabindex="-1" role="dialog" aria-labelledby="manageGroupsLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="manageGroupsLabel">{{'OVERVIEW_GROUPS_H' | translate}}</h4>
+      </div>
+      <div class="modal-body">
+      	<h4>{{'OVERVIEW_GROUPS_EXISTING' | translate}}</h4>
+      	<div class="row">
+	  		<span data-ng-show="groups.length > 1">
+	  			<div class="col-md-4" data-ng-repeat="group in groups" data-ng-show="group.gid != null">
+		  			<div class="panel panel-default">
+						<div class="panel-heading">
+							<div class="row">
+								<div class="col-sm-12">
+									<h2 class="panel-title group-name" data-ng-click="changeGroupName(group);"><span class="glyphicon glyphicon-tag" aria-hidden="true"></span> {{group.name}}</h2>
+								</div>
+							</div>
+						</div>
+						<div class="panel-body whatsspy-group-body">
+							<span class="label label-default whatsspy-label-notifications">{{'OVERVIEW_GROUPS_USERS' | translate}} {{getGroupUsers(group.gid)}}</span>
+							<span class="label label-success whatsspy-label-notifications" data-ng-show="group.read_only_token != null">{{'OVERVIEW_GROUPS_STATSEN' | translate}}</span>
+							<span class="label label-warning whatsspy-label-notifications" data-ng-show="group.read_only_token == null">{{'OVERVIEW_GROUPS_STATSDIS' | translate}}</span>
+							<br />
+							<br />
+							<a class="btn btn-danger whatsspy-label-notifications" title="Deleting the group will not delete the users in this group." data-ng-click="deleteGroup(group.gid);"><span class="glyphicon glyphicon-ban-circle" aria-hidden="true"></span> {{'OVERVIEW_GROUPS_DELETEBTN' | translate}}</a>   		
+						</div>
+					</div>
+				</div>
+			</span>
+			<span data-ng-show="groups.length == 1">
+				{{'OVERVIEW_GROUPS_NONE' | translate}}
+			</span>
+		</div>
+		<small>{{'OVERVIEW_GROUPS_SHARE' | translate}}</small>
+		<br />
+		<small data-ng-show="groups.length > 1">{{'OVERVIEW_GROUPS_DELETE' | translate}}</small>
+		<br />
+		<h4>{{'OVERVIEW_GROUPS_CREATE' | translate}}</h4>
+		<form class="form-horizontal">
+			<div class="form-group">
+				<label for="name" class="col-sm-2 control-label">{{'OVERVIEW_GROUPS_CREATE_NAME' | translate}}</label>
+				<div class="col-sm-5">
+					<input type="text" class="form-control" id="name" data-ng-model="newGroup.name" placeholder="{{'OVERVIEW_GROUPS_PLACEHOLDER' | translate}}">
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="name" class="col-sm-2 control-label"></label>
+				<div class="col-sm-5">
+					<button type="submit" data-ng-click="submitNewGroup();" class="btn btn-success">{{'OVERVIEW_GROUPS_CREATEBTN' | translate}}</button>
+				</div>
+			</div>
+		</form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{'OVERVIEW_GROUPS_CLOSE' | translate}}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="managePerformance" tabindex="-1" role="dialog" aria-labelledby="managePerformanceLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="managePerformanceLabel">{{'OVERVIEW_PERFORMANCE_H' | translate}}</h4>
+      </div>
+      <div class="modal-body">
+		<form class="form-horizontal">
+			<h4><span class="glyphicon glyphicon-user" aria-hidden="true"></span> {{'OVERVIEW_PERFORMANCE_TIMELINE' | translate}}</h4>
+		  <div class="form-group">
+		    <label for="phoneNumber" class="col-sm-2 control-label">{{'OVERVIEW_PERFORMANCE_TIMELINE_OPTION' | translate}} </label>
+		    <div class="col-sm-8 col-sm-offset-1 col-xs-10 col-xs-offset-1">
+		    	<div class="row">
+		    		<div class="col-sm-6">
+		    			<select class="form-control whatsspy-inline-form" data-ng-model="config.account_show_timeline_length" data-ng-options="option.value as option.name for option in timelineLengthOptions" ></select>
+		    		</div>
+		    		<div class="col-sm-6">
+		    			<small><span class="glyphicon glyphicon-flash" aria-hidden="true"></span> {{'OVERVIEW_PERFORMANCE_TIMELINE_EXP' | translate}} <strong>{{'OVERVIEW_PERFORMANCE_TIMELINE_EXP2' | translate}}</strong> {{'OVERVIEW_PERFORMANCE_TIMELINE_EXP3' | translate}}</small>
+		    		</div>
+		    	</div>
+		    </div>
+		  </div>
+		</form>
+		<form class="form-horizontal">
+		  <div class="form-group">
+		    <label for="phoneNumber" class="col-sm-2 control-label">{{'OVERVIEW_PERFORMANCE_TRACKER_H' | translate}}</label>
+		    <div class="col-sm-8 col-sm-offset-1 col-xs-10 col-xs-offset-1">
+		    	<div class="row">
+		    		<div class="col-sm-6">
+		    			<button type="button" class="btn btn-primary" data-ng-click="config.account_show_timeline_tracker = getOpposite(config.account_show_timeline_tracker);">
+	    					<span class="glyphicon glyphicon-ok green" aria-hidden="true" data-ng-show="config.account_show_timeline_tracker == true"></span>
+	    					<span class="glyphicon glyphicon-remove red" aria-hidden="true" data-ng-show="config.account_show_timeline_tracker == false"></span>
+	    					 {{'OVERVIEW_PERFORMANCE_TRACKER_OPTION' | translate}}
+	    				</button>
+		    		</div>
+		    		<div class="col-sm-6">
+		    			<small><span class="glyphicon glyphicon-flash" aria-hidden="true"></span> {{'OVERVIEW_PERFORMANCE_TRACKER_EXP' | translate}} <strong>{{'OVERVIEW_PERFORMANCE_TRACKER_EXP2' | translate}}</strong> {{'OVERVIEW_PERFORMANCE_TRACKER_EXP3' | translate}}</small>
+		    		</div>
+		    	</div>
+		    </div>
+		  </div>
+		</form>
+      </div>
+      <div class="modal-footer">
+      	<div class="whatsspy-contact-options">
+	      	<button type="submit" data-ng-click="submitConfigEdit();" class="btn btn-success"><span class="glyphicon glyphicon-ok-circle" aria-hidden="true"></span> {{'OVERVIEW_PERFORMANCE_SAVE' | translate}}</button> 
+		</div>
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{'OVERVIEW_PERFORMANCE_CLOSE' | translate}}</button>
+      </div>
+    </div>
+  </div>
+</div>

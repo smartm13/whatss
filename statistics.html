@@ -1,0 +1,520 @@
+<div class="row">
+	<div class="col-md-12">
+		<!-- panels here -->
+		<span data-ng-show="tokenInvalid == true">
+			<div class="alert alert-danger" role="alert"><strong>{{'TOKEN_INVALID' | translate}}</strong> {{'STATS_TOKEN_INFO' | translate}}</div>
+		</span>
+		<span data-ng-show="tokenAuth != null">
+			<div class="alert alert-warning" role="alert"><strong>{{'STATS_TOKEN_GROUP' | translate}}</strong> {{'STATS_TOKEN_GROUP_INFO' | translate}} <strong>{{stats.global_stats.shared_group_name}}</strong> {{'STATS_TOKEN_GROUP_INFO2' | translate}}</div>
+		</span>
+		<div class="whatsspy-no-information-data" data-ng-show="stats == null && tokenInvalid != true">
+			<span data-ng-show="showLoader == false">{{'STATS_NO_INFO' | translate}}</span>
+			<span data-ng-show="showLoader == true">{{'STATS_LOADING' | translate}}</span>
+		</div>
+		<span data-ng-show="authenticated == true && stats.global_stats != null">
+			<div class="row">
+				<div class="col-md-6">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title"><span class="glyphicon glyphicon-filter" aria-hidden="true"></span> {{'STATS_FILTER' | translate}}</h3>
+						</div>
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-md-12">
+									<select class="form-control" data-ng-model="filterGroup" data-ng-options="group.gid as group.name for group in groups" ></select>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title"><span class="glyphicon glyphicon-education" aria-hidden="true"></span> {{'STATS_NOTES' | translate}}</h3>
+						</div>
+						<div class="panel-body">
+							<span data-ng-show="filterGroup == null">
+							{{'STATS_INFO_VALIDITY' | translate}}
+							</span>
+							<span data-ng-show="filterGroup != null">
+								<div class="row">
+					    			<div class="col-sm-8 col-xs-12">
+					    				<div class="input-group whatsspy-copy-token" data-ng-click="copyToClipboard(getTokenUrl('group', getGroupById(filterGroup).read_only_token))">
+					        				<span class="input-group-addon"><span class="glyphicon glyphicon-link" aria-hidden="true"></span></span>  
+							    			<input type="text" class="form-control" id="shareUrl" data-ng-value="getGroupById(filterGroup).read_only_token | emptyToken" disabled="disabled">
+							    		</div>
+					    			</div>
+					    			<div class="col-sm-4 col-xs-12">
+					    				<button type="button" class="btn btn-primary" data-ng-click="generateReadOnlyToken('group', null, getGroupById(filterGroup))">
+					    					 {{'STATS_TOKEN_GEN' | translate}}
+					    				</button>
+					    				<button type="button" class="btn btn-danger" data-ng-click="resetReadOnlyToken('group', null, getGroupById(filterGroup))">
+					    					 {{'STATS_TOKEN_RESET' | translate}}
+					    				</button>
+					    			</div>
+					    		</div>    			
+					    		<small>
+					    			{{'STATS_SHARE_INFO' | translate}}
+					    		</small>
+					    	</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</span>
+		<span data-ng-show="stats.global_stats != null">
+			<div class="row">
+				<div class="col-md-6">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title"><span class="glyphicon glyphicon-home" aria-hidden="true"></span> {{'STATS_H' | translate}}</h3>
+						</div>
+						<div class="panel-body whatsspy-statistics-first-row">
+							<h5>{{'STATS_TRACKER_STATUS' | translate}}</h5>
+							<table class="table table-striped table-bordered ">
+						      <tbody>
+						        <tr>
+						          <th class="whatsspy-statistics-table-normal">{{'STATS_SESSION' | translate}} </th>
+						          <td>{{stats.global_stats.tracker_session_count}}</td>
+						        </tr>
+						        <tr>
+						          <th>{{'STATS_FIRST_SESSION' | translate}}</th>
+						          <td>{{stats.global_stats.first_tracker_session | staticDatetime}}</td>
+						        </tr>
+						       </tbody>
+						    </table>
+						    <h5>{{'STATS_DB_CONTENT' | translate}}</h5>
+						    <table class="table table-striped table-bordered ">
+						      <tbody>
+						        <tr>
+						          <th class="whatsspy-statistics-table-normal">{{'STATS_NUMBER_OF_ACC' | translate}}</th>
+						          <td>{{stats.global_stats.user_count}} {{'STATS_ACCOUNTS' | translate}}</td>
+						        </tr>
+						        <tr>
+						          <th>{{'STATS_H_ONLINE' | translate}}</th>
+						          <td>{{stats.global_stats.user_status_count}} {{'STATS_STATUSES' | translate}}</td>
+						        </tr>
+						        <tr>
+						          <th>{{'STATS_H_TOTALTIME' | translate}}</th>
+						          <td>{{stats.global_stats.user_status_count_time | timeFormat}}</td>
+						        </tr>
+						        <tr>
+						          <th>{{'STATS_H_PROFPICSUM' | translate}}</th>
+						          <td>{{stats.global_stats.profilepicture_count}} {{'STATS_PROFPIC' | translate}}</td>
+						        </tr>
+						        <tr>
+						          <th>{{'STATS_H_STATUSMSGSUM' | translate}}</th>
+						          <td>{{stats.global_stats.statusmessage_count}} {{'STATS_STSMSG' | translate}}</td>
+						        </tr>
+						      </tbody>
+						    </table>
+						    
+						</div>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> {{'STATS_H_PRIVACY' | translate}}</h3>
+						</div>
+						<div class="panel-body whatsspy-statistics-first-row">
+							<h5>{{'STATS_PRIVACY_H' | translate}}</h5>
+							<table class="table table-striped table-bordered ">
+								<tbody>
+								<tr>
+								  <th>{{'STATS_PRIVACY_TABLE_TH1' | translate}}</th>
+								  <th>{{'STATS_PRIVACY_TABLE_TH2' | translate}}</th>
+								  <th>{{'STATS_PRIVACY_TABLE_TH3' | translate}}</th>
+								</tr>
+								<tr>
+								  <td>{{'STATS_PRIVACY_OPTION1' | translate}}</td>
+								  <td><span class="label label-danger">{{stats.global_stats.account_lastseen_privacy_enabled}} {{'STATS_PRIVACY_USERS' | translate}}</span></td>
+								  <td><span class="label label-success">{{stats.global_stats.account_lastseen_privacy_disabled}} {{'STATS_PRIVACY_USERS' | translate}}</span></td>
+								</tr>
+								<tr>
+								  <td>{{'STATS_PRIVACY_OPTION2' | translate}}</td>
+								  <td><span class="label label-danger">{{stats.global_stats.account_statusmessage_privacy_enabled}} {{'STATS_PRIVACY_USERS' | translate}}</span></td>
+								  <td><span class="label label-success">{{stats.global_stats.account_statusmessage_privacy_disabled}} {{'STATS_PRIVACY_USERS' | translate}}</span></td>
+								</tr>
+								<tr>
+								  <td>{{'STATS_PRIVACY_OPTION3' | translate}}</td>
+								  <td><span class="label label-danger">{{stats.global_stats.account_profilepic_privacy_enabled}} {{'STATS_PRIVACY_USERS' | translate}}</span></td>
+								  <td><span class="label label-success">{{stats.global_stats.account_profilepic_privacy_disabled}} {{'STATS_PRIVACY_USERS' | translate}}</span></td>
+								</tr>
+								</tbody>
+							</table>
+							<h5>{{'STATS_PRIVACY_HISTORY' | translate}}</h5>
+							<table class="table table-striped table-bordered ">
+								<tbody>
+							        <tr>
+							          <th class="whatsspy-statistics-table-normal">{{'STATS_PRIVACY_LASTSEEN' | translate}}</th>
+							          <td>{{stats.global_stats.lastseen_privacy_count}} {{'STATS_PRIVACY_CHANGE' | translate}}</td>
+							        </tr>
+							        <tr>
+							          <th>{{'STATS_PRIVACY_PROFPIC' | translate}}</th>
+							          <td>{{stats.global_stats.profilepic_privacy_count}} {{'STATS_PRIVACY_CHANGE' | translate}}</td>
+							        </tr>
+							        <tr>
+							          <th>{{'STATS_PRIVACY_STATUSMSG' | translate}}</th>
+							          <td>{{stats.global_stats.statusmessage_privacy_count}} {{'STATS_PRIVACY_CHANGE' | translate}}</td>
+							        </tr>
+								</tbody>
+							</table>
+							<small>{{'STATS_PRIVACY_INFO1' | translate}} <a href="https://maikel.pro/blog/en-whatsapp-privacy-problem-explained-in-detail/" target="_blank">{{'STATS_PRIVACY_INFO2' | translate}}</a> {{'STATS_PRIVACY_INFO3' | translate}}</small>
+						</div>
+					</div>
+				</div>
+			</div>
+		</span>
+		<span data-ng-show="stats.user_status_analytics_user != null">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title"><span class="glyphicon glyphicon-calendar" aria-hidden="true"></span> {{'STATS_PIE_CHART_ONLINE_TIME_H' | translate}}</h3>
+						</div>
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-md-12 whatsspy-statistics-piechart-control">
+					    				<button data-ng-disabled="stats.generated.showPieChart == 'today'" data-ng-click="stats.generated.showPieChart = 'today';" type="button" class="btn btn-info">{{'STATS_PIE_CHART_TODAY' | translate}}</button>
+					    				<button data-ng-disabled="stats.generated.showPieChart == '7days'" data-ng-click="stats.generated.showPieChart = '7days';" type="button" class="btn btn-info">{{'STATS_PIE_CHART_7DAYS' | translate}}</button>
+					    				<button data-ng-disabled="stats.generated.showPieChart == '14days'" data-ng-click="stats.generated.showPieChart = '14days';" type="button" class="btn btn-info">{{'STATS_PIE_CHART_14DAYS' | translate}}</button>
+					    				<button data-ng-disabled="stats.generated.showPieChart == 'all'" data-ng-click="stats.generated.showPieChart = 'all';" type="button" class="btn btn-info">{{'STATS_PIE_CHART_ALL' | translate}}</button>
+									</div>
+								</div>
+							<div class="row">
+								<div class="col-md-6">
+									<span data-ng-show="stats.generated.showPieChart == 'all'">
+										<h4 class="whatsspy-stat-head">{{'STATS_PIE_CHART_PIE_OPEN_H_ALL' | translate}}</h4>
+										<nvd3-pie-chart
+											data="stats.user_status_analytics_user"
+											id="pieChart-user-activities-count-all"
+											width="600"
+											height="600"
+											x="xFunction()"
+											y="yFunction('count_all')"
+											margin="{left:0,top:15,bottom:0,right:0}"
+											labelType="percent"
+											tooltips="true"
+											noData="No information available"
+											tooltipcontent="tooltipUserStatusCount('count_all')"
+											showLabels="true">
+											<svg></svg>
+										</nvd3-pie-chart>
+									</span>
+									<span data-ng-show="stats.generated.showPieChart == 'today'">
+										<h4 class="whatsspy-stat-head">{{'STATS_PIE_CHART_PIE_OPEN_H_TODAY' | translate}}</h4>
+										<nvd3-pie-chart
+											data="stats.user_status_analytics_user"
+											id="pieChart-user-activities-count-today"
+											width="600"
+											height="600"
+											x="xFunction()"
+											y="yFunction('count_today')"
+											margin="{left:0,top:15,bottom:0,right:0}"
+											labelType="percent"
+											tooltips="true"
+											noData="No information available"
+											tooltipcontent="tooltipUserStatusCount('count_today')"
+											showLabels="true">
+											<svg></svg>
+										</nvd3-pie-chart>
+									</span>
+									<span data-ng-show="stats.generated.showPieChart == '7days'">
+										<h4 class="whatsspy-stat-head">{{'STATS_PIE_CHART_PIE_OPEN_H_7DAYS' | translate}}</h4>
+										<nvd3-pie-chart
+											data="stats.user_status_analytics_user"
+											id="pieChart-user-activities-count-7day"
+											width="600"
+											height="600"
+											x="xFunction()"
+											y="yFunction('count_7day')"
+											margin="{left:0,top:15,bottom:0,right:0}"
+											labelType="percent"
+											tooltips="true"
+											noData="No information available"
+											tooltipcontent="tooltipUserStatusCount('count_7day')"
+											showLabels="true">
+											<svg></svg>
+										</nvd3-pie-chart>
+									</span>
+									<span data-ng-show="stats.generated.showPieChart == '14days'">
+										<h4 class="whatsspy-stat-head">{{'STATS_PIE_CHART_PIE_OPEN_H_14DAYS' | translate}}</h4>
+										<nvd3-pie-chart
+											data="stats.user_status_analytics_user"
+											id="pieChart-user-activities-count-14day"
+											width="600"
+											height="600"
+											x="xFunction()"
+											y="yFunction('count_14day')"
+											margin="{left:0,top:15,bottom:0,right:0}"
+											labelType="percent"
+											tooltips="true"
+											noData="No information available"
+											tooltipcontent="tooltipUserStatusCount('count_14day')"
+											showLabels="true">
+											<svg></svg>
+										</nvd3-pie-chart>
+									</span>
+								</div>
+								<div class="col-md-6">
+									<span data-ng-show="stats.generated.showPieChart == 'all'">
+										<h4 class="whatsspy-stat-head">{{'STATS_PIE_CHART_PIE_ONLINE_H_ALL' | translate}}</h4>
+										<nvd3-pie-chart
+											data="stats.user_status_analytics_user"
+											id="pieChart-user-activities-time-all"
+											width="600"
+											height="600"
+											x="xFunction()"
+											y="yFunction('seconds_all')"
+											margin="{left:0,top:15,bottom:0,right:0}"
+											labelType="percent"
+											tooltips="true"
+											noData="No information available"
+											tooltipcontent="tooltipUserStatusTime('seconds_all')"
+											showLabels="true">
+											<svg></svg>
+										</nvd3-pie-chart>
+									</span>
+									<span data-ng-show="stats.generated.showPieChart == 'today'">
+										<h4 class="whatsspy-stat-head">{{'STATS_PIE_CHART_PIE_ONLINE_H_TODAY' | translate}}</h4>
+										<nvd3-pie-chart
+											data="stats.user_status_analytics_user"
+											id="pieChart-user-activities-time-today"
+											width="600"
+											height="600"
+											x="xFunction()"
+											y="yFunction('seconds_today')"
+											margin="{left:0,top:15,bottom:0,right:0}"
+											labelType="percent"
+											tooltips="true"
+											noData="No information available"
+											tooltipcontent="tooltipUserStatusTime('seconds_today')"
+											showLabels="true">
+											<svg></svg>
+										</nvd3-pie-chart>
+									</span>
+									<span data-ng-show="stats.generated.showPieChart == '7days'">
+										<h4 class="whatsspy-stat-head">{{'STATS_PIE_CHART_PIE_ONLINE_H_7DAYS' | translate}}</h4>
+										<nvd3-pie-chart
+											data="stats.user_status_analytics_user"
+											id="pieChart-user-activities-time-7day"
+											width="600"
+											height="600"
+											x="xFunction()"
+											y="yFunction('seconds_7day')"
+											margin="{left:0,top:15,bottom:0,right:0}"
+											labelType="percent"
+											tooltips="true"
+											noData="No information available"
+											tooltipcontent="tooltipUserStatusTime('seconds_7day')"
+											showLabels="true">
+											<svg></svg>
+										</nvd3-pie-chart>
+									</span>
+									<span data-ng-show="stats.generated.showPieChart == '14days'">
+										<h4 class="whatsspy-stat-head">{{'STATS_PIE_CHART_PIE_ONLINE_H_14DAYS' | translate}}</h4>
+										<nvd3-pie-chart
+											data="stats.user_status_analytics_user"
+											id="pieChart-user-activities-time-14day"
+											width="600"
+											height="600"
+											x="xFunction()"
+											y="yFunction('seconds_14day')"
+											margin="{left:0,top:15,bottom:0,right:0}"
+											labelType="percent"
+											tooltips="true"
+											noData="No information available"
+											tooltipcontent="tooltipUserStatusTime('seconds_14day')"
+											showLabels="true">
+											<svg></svg>
+										</nvd3-pie-chart>
+									</span>
+								</div>	
+							</div>
+							{{'STATS_PIE_CHART_PIE_INFO' | translate}}
+						</div>
+					</div>
+				</div>
+			</div>
+		</span>
+		<span data-ng-show="stats.user_status_analytics_time != null">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title"><span class="glyphicon glyphicon-calendar" aria-hidden="true"></span> {{'STATS_PIE_CHART_BAR_H' | translate}}</h3>
+						</div>
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-md-6">
+									<span data-ng-show="stats.generated.showWeekday == true">
+						    			<h4>{{'STATS_PIE_CHART_BAR_OPEN_H_WEEKDAY' | translate}}</h4>
+						    			<nvd3-multi-bar-chart
+									    	data="stats.generated.chart_weekday_status_count_all"
+									        id="opened-overview-graph-weekday"
+									        tooltipcontent="barChartToolTip('weekday', 'times')"
+									        width="500"
+											height="300"
+									        showXAxis="false"
+									        showYAxis="true"
+									        margin=" {top:5,bottom:5,right:0}"
+									        showLegend="true"
+									        tooltips="true"
+									        stacked="true">
+									        	<svg></svg>
+									    </nvd3-multi-bar-chart>
+									</span>
+									<span data-ng-show="stats.generated.showHour == true">
+						    			<h4>{{'STATS_PIE_CHART_BAR_OPEN_H_HOUR' | translate}}</h4>
+						    			<nvd3-multi-bar-chart
+									    	data="stats.generated.chart_hour_status_count_all"
+									        id="opened-overview-graph-hour"
+									        tooltipcontent="barChartToolTip('hour', 'times')"
+									        width="500"
+											height="300"
+									        showXAxis="false"
+									        showYAxis="true"
+									        margin=" {top:5,bottom:5,right:0}"
+									        showLegend="true"
+									        tooltips="true"
+									        stacked="true">
+									        	<svg></svg>
+									    </nvd3-multi-bar-chart>
+									</span>
+								</div>
+								<div class="col-md-6">
+									<div class="whatsspy-bar-graph-toggle">
+					    				<button data-ng-show="stats.generated.showHour != true" data-ng-click="stats.generated.showWeekday = false; stats.generated.showHour = true; " type="button" class="btn btn-info">{{'STATS_PIE_CHART_BAR_SHOWHOUR' | translate}}</button>
+					    				<button data-ng-show="stats.generated.showWeekday != true" data-ng-click="stats.generated.showWeekday = true; stats.generated.showHour = false" type="button" class="btn btn-info">{{'STATS_PIE_CHART_BAR_SHOWWEEKDAY' | translate}}</button>
+					    			</div>
+					    			<span data-ng-show="stats.generated.showWeekday == true">
+						    			<h4>{{'STATS_PIE_CHART_BAR_TIME_H_WEEKDAY' | translate}}</h4>
+						    			<nvd3-multi-bar-chart
+									    	data="stats.generated.chart_weekday_status_time_all"
+									        id="time-overview-graph-weekday"
+									        tooltipcontent="barChartToolTip('weekday', 'minutes')"
+									        width="500"
+											height="300"
+									        showXAxis="false"
+									        showYAxis="true"
+									        margin=" {top:5,bottom:5,right:0}"
+									        showLegend="true"
+									        tooltips="true"
+									        stacked="true">
+									        	<svg></svg>
+									    </nvd3-multi-bar-chart>
+									</span>
+									<span data-ng-show="stats.generated.showHour == true">
+						    			<h4>{{'STATS_PIE_CHART_BAR_TIME_H_HOUR' | translate}}</h4>
+						    			<nvd3-multi-bar-chart
+									    	data="stats.generated.chart_hour_status_time_all"
+									        id="time-overview-graph-hour"
+									        tooltipcontent="barChartToolTip('hour', 'minutes')"
+									        width="500"
+											height="300"
+									        showXAxis="false"
+									        showYAxis="true"
+									        margin=" {top:5,bottom:5,right:0}"
+									        showLegend="true"
+									        tooltips="true"
+									        stacked="true">
+									        	<svg></svg>
+									    </nvd3-multi-bar-chart>
+									</span>
+								</div>	
+							</div>
+							<br />
+							<br />
+						</div>
+					</div>	
+				</div>
+			</div>
+		</span>
+		<span data-ng-show="stats.top_usage_users != null">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title"><span class="glyphicon glyphicon-th-list" aria-hidden="true"></span> {{'STATS_TOP_H1' | translate}} {{showTopUsers}} {{'STATS_TOP_H2' | translate}}</h3>
+						</div>
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-md-12">
+									<button data-ng-show="stats.top_usage_users.meta.count <= 20" data-ng-disabled="showTopUsers == 5" data-ng-click="showTopUsers = 5;" type="button" class="btn btn-primary">{{'STATS_TOP_H1' | translate}} 5</button> 
+									<button data-ng-disabled="showTopUsers == 10" data-ng-click="showTopUsers = 10;" type="button" class="btn btn-primary">{{'STATS_TOP_H1' | translate}} 10</button> 
+									<button data-ng-show="stats.top_usage_users.meta.count >= 20" data-ng-disabled="showTopUsers == 20" data-ng-click="showTopUsers = 20;" type="button" class="btn btn-primary">{{'STATS_TOP_H1' | translate}} 20</button> 
+									<button data-ng-show="stats.top_usage_users.meta.count >= 30" data-ng-disabled="showTopUsers == 30" data-ng-click="showTopUsers = 30;" type="button" class="btn btn-primary">{{'STATS_TOP_H1' | translate}} 30</button> 
+									<button data-ng-show="stats.top_usage_users.meta.count >= 50" data-ng-disabled="showTopUsers == 50" data-ng-click="showTopUsers = 50;" type="button" class="btn btn-primary">{{'STATS_TOP_H1' | translate}} 50</button> 
+									<button data-ng-show="stats.top_usage_users.meta.count >= 100" data-ng-disabled="showTopUsers == 100" data-ng-click="showTopUsers = 100;" type="button" class="btn btn-primary">{{'STATS_TOP_H1' | translate}} 100</button> 
+									<button data-ng-show="stats.top_usage_users.meta.count > 100" data-ng-disabled="showTopUsers == stats.top_usage_users.meta.count" data-ng-click="showTopUsers = stats.top_usage_users.meta.count;" type="button" class="btn btn-primary">{{'STATS_TOP_ALL_SHOW' | translate}}</button> 
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-6">
+									<h4>{{'STATS_TOP_H1' | translate}} {{showTopUsers}} {{'STATS_TOP_H3' | translate}} - {{'STATS_TYPE_' + stats.generated.top10DayChoice | translate}}</h4>
+									<button data-ng-disabled="stats.generated.top10DayChoice == 'today'" data-ng-click="stats.generated.top10DayChoice = 'today';" type="button" class="btn btn-info">{{'STATS_TOP_TODAY' | translate}}</button>
+									<button data-ng-disabled="stats.generated.top10DayChoice == 'yesterday'" data-ng-click="stats.generated.top10DayChoice = 'yesterday';" type="button" class="btn btn-info">{{'STATS_TOP_YESTERDAY' | translate}}</button>
+									<button data-ng-disabled="stats.generated.top10DayChoice == '2days_ago'" data-ng-click="stats.generated.top10DayChoice = '2days_ago';" type="button" class="btn btn-info">2 {{'STATS_TOP_DAYS_AGO' | translate}}</button>
+									<button data-ng-disabled="stats.generated.top10DayChoice == '3days_ago'" data-ng-click="stats.generated.top10DayChoice = '3days_ago';" type="button" class="btn btn-info">3 {{'STATS_TOP_DAYS_AGO' | translate}}</button>
+									<button data-ng-disabled="stats.generated.top10DayChoice == '4days_ago'" data-ng-click="stats.generated.top10DayChoice = '4days_ago';" type="button" class="btn btn-info">4 {{'STATS_TOP_DAYS_AGO' | translate}}</button>
+									<br />
+									<br />
+									<table class="table table-striped table-bordered ">
+										<tbody>
+										<tr>
+										  <th>{{'STATS_TOP_TRACKED_CONTACT' | translate}}</th>
+										  <th>{{'STATS_TOP_TIME' | translate}}</th>
+										  <th>{{'STATS_TOP_OPENED' | translate}}</th>
+										</tr>
+										<tr data-ng-repeat="user in stats.top_usage_users[stats.generated.top10DayChoice]">
+										  <td>
+										  	<a data-ng-show="tokenAuth == null" data-ng-href="#/overview#{{user.id}}" class="whatsspy-clean-link"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> {{user.name | emptyName}}</a>
+
+										  	<span data-ng-show="tokenAuth != null">
+										  	<span data-ng-show="tokenAuth != null" class="glyphicon glyphicon-user" aria-hidden="true"></span> {{user.name | emptyName}}</span>
+										  </td>
+										  <td>{{user.online | timeFormat}}</td>
+										  <td>{{user.count}} {{'STATS_TOP_TIMES' | translate}}</td>
+										</tr>
+										</tbody>
+									</table>
+								</div>
+								<div class="col-md-6">
+									<h4>{{'STATS_TOP_H1' | translate}} {{showTopUsers}} {{'STATS_TOP_H4' | translate}} - {{'STATS_TYPE_' + stats.generated.top10TimeChoice | translate}}</h4>
+									<button data-ng-disabled="stats.generated.top10TimeChoice == 'alltime'" data-ng-click="stats.generated.top10TimeChoice = 'alltime';" type="button" class="btn btn-info">{{'STATS_TOP_ALL' | translate}}</button>
+									<button data-ng-disabled="stats.generated.top10TimeChoice == '31days'" data-ng-click="stats.generated.top10TimeChoice = '31days';" type="button" class="btn btn-info">31 {{'STATS_TOP_DAYS' | translate}}</button>
+									<button data-ng-disabled="stats.generated.top10TimeChoice == '14days'" data-ng-click="stats.generated.top10TimeChoice = '14days';" type="button" class="btn btn-info">14 {{'STATS_TOP_DAYS' | translate}}</button>
+									<button data-ng-disabled="stats.generated.top10TimeChoice == '7days'" data-ng-click="stats.generated.top10TimeChoice = '7days';" type="button" class="btn btn-info">7 {{'STATS_TOP_DAYS' | translate}}</button>
+									<button data-ng-disabled="stats.generated.top10TimeChoice == '24hours'" data-ng-click="stats.generated.top10TimeChoice = '24hours';" type="button" class="btn btn-info">24 {{'STATS_TOP_HOURS' | translate}}</button>
+									<br />
+									<br />
+									<table class="table table-striped table-bordered ">
+										<tbody>
+										<tr>
+										  <th>{{'STATS_TOP_TRACKED_CONTACT' | translate}}</th>
+										  <th>{{'STATS_TOP_TIME' | translate}}</th>
+										  <th>{{'STATS_TOP_OPENED' | translate}}</th>
+										</tr>
+										<tr data-ng-repeat="user in stats.top_usage_users[stats.generated.top10TimeChoice]">
+										  <td>
+										  	<a data-ng-show="tokenAuth == null" data-ng-href="#/overview#{{user.id}}" class="whatsspy-clean-link"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> {{user.name | emptyName}}</a>
+
+										  	<span data-ng-show="tokenAuth != null">
+										  	<span class="glyphicon glyphicon-user" aria-hidden="true"></span> {{user.name | emptyName}}
+										  </span>
+										  </td>
+										  <td>{{user.online | timeFormat}}</td>
+										  <td>{{user.count}} {{'STATS_TOP_TIMES' | translate}}</td>
+										</tr>
+										</tbody>
+									</table>
+								</div>	
+							</div>
+						</div>
+					</div>	
+				</div>
+			</div>
+		</span>
+	</div>
+</div>

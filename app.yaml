@@ -12,7 +12,7 @@ handlers:
 - url: /index.html
   script: index.html
 
-- url: /xmihir.*
+- url: /xmihirx.*
   script: main.php
 
 - url: /(.*)

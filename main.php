@@ -1,4 +1,4 @@
 <?php
-    echo 'Hello world!a';
+    echo 'Hello world!<br>';
 echo "The time is " . date("h:i:sa");
 ?>
